@@ -1,11 +1,11 @@
-package Dao;
+package dao;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-import Vo.MembersVo;
 import movie.OracleConnectionUtil;
+import vo.MembersVo;
 
 public class CancleDao {
 	public static CancleDao cdao = new CancleDao();
@@ -19,7 +19,8 @@ public class CancleDao {
 	// 로그인 후 예매취소
 	public void Cancle(MembersVo mvo) {
 		String sql = "DELETE FROM payment WHERE mem_code ="
-				+ "(SELECT mem_code FROM members WHERE id = ? AND password = ?)";
+				+ "(SELECT mem_code FROM members WHERE id = ? AND password = ?)"
+				+ "AND movie_code = ?";
 		
 		Connection conn = OracleConnectionUtil.connect();
 		PreparedStatement pstmt = null;
@@ -28,6 +29,7 @@ public class CancleDao {
 			pstmt = conn.prepareStatement(sql); 
 			pstmt.setString(1, mvo.getId());
 			pstmt.setString(2, mvo.getPassword());
+			pstmt.setString(3, mvo.getMovie_code());
 			
 			pstmt.execute();
 		}

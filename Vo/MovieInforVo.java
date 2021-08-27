@@ -1,5 +1,6 @@
 package vo;
 
+
 import java.sql.Date;
 
 import lombok.AllArgsConstructor;
@@ -13,11 +14,13 @@ import lombok.ToString;
 @AllArgsConstructor
 @ToString
 @Builder
-public class TicketingCheckVo {
-	private String movie_code;
+
+public class MovieInforVo {
+	private String movie_num;
 	private String movie_name;
-	private Date movie_date;
-	private String movie_time;
-	private String movie_theater;
-	private int movie_prive;
+	private String run_time;
+	private String movie_genre;
+	private Date playdate;
+	private String nation;
+	private String movie_rating;
 }

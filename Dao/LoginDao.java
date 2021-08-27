@@ -1,12 +1,12 @@
-package Dao;
+package dao;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import Vo.MembersVo;
 import movie.OracleConnectionUtil;
+import vo.MembersVo;
 
 public class LoginDao {
 	private static LoginDao ldao = new LoginDao();

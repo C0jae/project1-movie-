@@ -11,13 +11,8 @@ import lombok.ToString;
 @AllArgsConstructor
 @ToString
 @Builder
-public class MembersVo {
-	// 아이디, 비밀번호
-	private String mem_code;
-	private String name;
-	private String id;
-	private String password;
-	private String email;
-	private String tel;
+public class SeatVo {
 	private String movie_code;
+	private String movie_theater;
+	private String movie_seat;
 }
