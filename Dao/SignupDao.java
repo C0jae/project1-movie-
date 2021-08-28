@@ -22,7 +22,7 @@ public class SignupDao {
     	PreparedStatement pstmt = null;
     	
     	String sql = "INSERT INTO MEMBERS (mem_code, id, password, name, email, tel)"
-    			+ " VALUES(idx. ,?,?,?,?,?)";
+    			+ " VALUES(mem_code.nextval,?,?,?,?,?)";
  		
  		try {
  			pstmt = conn.prepareStatement(sql);
@@ -33,13 +33,13 @@ public class SignupDao {
  			pstmt.setString(4, mvo.getEmail());
  			pstmt.setString(5, mvo.getTel());
  		
- 		
- 	  		 pstmt.execute();
- 	         System.out.println("insert 정상완료");
- 		} catch (SQLException e) {
+ 	  		pstmt.execute();
+ 		}
+ 		catch (SQLException e) {
 	      System.out.println("SQL 실행에 오류가 발생했습니다."+e.getMessage());
 			e.printStackTrace();
-		} finally {
+		}
+ 		finally {
 			try {
 				pstmt.close();
 			}
@@ -63,22 +63,27 @@ public boolean idcheck (String id) {
 		pstmt.setString(1,id);
 		
 		rs = pstmt.executeQuery();
+		
 		if(rs.next()) {
-			
 			return false;
-		}else return true;
+		}
+		else
+			return true;
 		
 	} catch (SQLException e) {
 		System.err.println("SQL 실행에 오류가 발생했습니다." + e.getMessage());
 		e.printStackTrace();
-	}finally {
-		
 	}
+	finally {
 		try {
-		rs.close();
-		pstmt.close();    
-	} catch (SQLException e) {
-		System.out.println("close 오류발생" + e.getMessage());
+			rs.close();
+			pstmt.close();    
+		}
+		catch (SQLException e) {
+			System.out.println("close 오류발생" + e.getMessage());
+			e.printStackTrace();
+		}
+		OracleConnectionUtil.close(conn);
 	}
 	return false;
 	

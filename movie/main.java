@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Scanner;
+import java.util.regex.Pattern;
 
 import dao.CancleDao;
 import dao.LoginDao;
@@ -20,30 +21,40 @@ import vo.TicketInfoVo;
 import vo.TicketingCheckVo;
 
 public class Main {
-	
+	// 좌석지정을 위한 배열
 	public static String[][] seat = new String[5][9];
 
 	public void resetSeat(){
-
-		for(int i=1; i<5; i++){
-
-			for(int j=1; j<9; j++){
-
-				seat[i][j]="___";
+		for (int i = 1; i < 5; i++){
+			for(int j = 1; j < 9; j++){
+				seat[i][j] = "___";
 			}
 		}
-	}
+	}	// resetSeat -end
+	
+	// 좌석표시
 	public void reference(){
 		char row = 'A';
-		for(int i=1; i<5; i++){
-			System.out.print("\n"+row+"열  ");row++;
-			for(int j=1; j<9; j++){
+		for (int i = 1; i < 5; i++){
+			System.out.print("\n" + row + "열  ");
+			row++;
+			for(int j = 1; j < 9; j++){
 				String seat = (this.seat[i][j].equals("___"))?"◻︎":"◼︎";
-				System.out.print((j)+seat+"  ");
+				System.out.print((j) + seat + "  ");
 			}
 		}
 		System.out.println();
+	}	// reference -end
+	
+	// 이메일 형식 일치여부 판단
+	public static boolean isEmail(String email) {
+		if (email == null) return false;
+		boolean rr = Pattern.matches("[\\w\\~\\-\\.]+@[\\w\\~\\-]+(\\.[\\w\\~\\-]+)+",email.trim()); 
+	     //email.trim() :양옆 공백제거
+		// Pattern matches :정규패턴  
+		return rr;
 	}
+	
 	
 	public static void main(String[] args) {
 		Scanner sc = new Scanner(System.in);
@@ -63,17 +74,15 @@ public class Main {
 			sc.nextLine();
 			
 			if (select == 1) {	// 회원가입
-				String id = null, password,password2 = null, name, email = null;
-				String tel;
-
-				System.out.println(" 영화 그 이상의 감동\n" + "CGV에 오신걸 환영합니다.\n ");
-
-				System.out.println("============== 회원가입 ==============");
-		        
+				String id = null, password = null, password2 = null, name = null, email = null;
+				String tel = null;
 				
-				while (true) {
-					System.out.print("ID를 입력하세요 ===>");
-					id = sc.nextLine();
+				System.out.println(" 영화 그 이상의 감동\n" + "CGV에 오신걸 환영합니다.\n ");
+				System.out.println("============== 회원가입 ==============");
+
+				while (true) {	// 아이디 형식 일치 및 중복여부 확인
+					System.out.print("ID를 입력하세요 ===> ");
+					id = sc.nextLine().trim();
 					if (sdao.idcheck(id)) {
 						if (id.length() <= 20) {
 							System.out.println(id + "은 사용 가능한 아이디 입니다.");
@@ -81,56 +90,59 @@ public class Main {
 						} else {
 							System.out.println("아이디가 너무 깁니다 다시 확인해주세요.");
 						}
-					} else {
+					}
+					else {
 						System.out.println("::: 사용 중인 ID 입니다. :::");
-				
 					}
-				}
-				
-				while (true) {
-					System.out.print("\n비밀번호를 입력하세요 ===> ");        
-					password = sc.nextLine();
-						if (password.length() < 10) {
-							System.out.print("\n비밀번호를 한번 더 입력하세요 ===> ");
-							password2 = sc.nextLine();
-								if(password2.length() == password.length()) {
-									break;
-								} else {
-									System.out.println("다르게 입력하셨습니다. 다시 입력해주세요.");
-								}
-						 }else {
-							System.out.println("비밀번호는 10자이하로만 가능합니다.");
-							
+				}	// while -end
+
+				while (true) {	// 비밀번호 형식 일치여부 확인
+					System.out.print("\n비밀번호를 입력하세요 ===> ");
+					password = sc.nextLine().trim();
+					if (password.length() >= 8 && password.length() <= 20) {
+						System.out.print("\n비밀번호를 한번 더 입력하세요 ===> ");
+						password2 = sc.nextLine();
+						if (password.equals(password2)) {
+							System.out.print("\n이름을 입력하세요 ===> ");
+							name = sc.nextLine().trim();
+							break;
 						}
-							}
-				
-				System.out.print("\n이름을 입력하세요 ===> ");
-				name = sc.nextLine();
-				System.out.print("\nEmail를 입력하세요 ===> ");
-				email = sc.nextLine();
-				
-				
-				while ( true) {
-					System.out.print("\n전화번호를 입력하세요 ===> ");
-					tel = sc.nextLine();
-					if(tel.length() == 13) {
-						break;
-					}else {
-						System.out.println("- 포함한 전화번호 13자리을 입력해주세요");
+						else {	// 비밀번호 확인 불일치
+							System.out.println("다르게 입력하셨습니다. 다시 입력하세요.");
+						}
 					}
+					else {
+						System.out.println("비밀번호는 8~20자리 이내로 입력하세요");
+					}
+				}	// while -end
+
+				while(true) {	// 이메일 입력 및 형식 일치여부 확인
+					System.out.print("\nEmail를 입력하세요 ===> ");
+					email = sc.nextLine();
+					if(isEmail(email)) {
+						break;
+						}
+					else {
+						System.out.println("올바르지 않은 이메일 형식입니다. Ex:)sample@naver.com");
+					};
 				}
 				
-				mvo = MembersVo.builder().id(id).password(password).name(name).email(email)
-						.tel(tel).build();
+				while (true) {	// 전화번호 입력 및 자릿수 일치여부 확인
+					System.out.print("\n숫자만을 포함한 전화번호 11자리를 입력하세요 ===> ");
+					tel = sc.nextLine().trim();
+					
+					if (tel.length() == 11) {
+						break;
+					}
+					else {
+						System.out.println("전화번호 입력이 위 조건과 일치하지 않습니다.");
+					}
+				}	// while -end
+
+				mvo = MembersVo.builder().id(id).password(password).name(name).email(email).tel(tel).build();
 				sdao.insert(mvo);
-				
 				System.out.println("\n축하합니다 가입이 완료되었습니다.");
 				System.out.println("===================================");
-				System.out.println("\n" + id + "님 환영합니다!");
-				
-			
-				
-				
 				
 			}	// select1 -end
 			
@@ -155,13 +167,9 @@ public class Main {
 						System.out.print("숫자입력 >>> ");
 						int select2 = sc.nextInt();
 						sc.nextLine();
-						
-						
-						
+
 						
 						if (select2 == 1) {	// 영화예매
-							
-							
 							PreparedStatement pstmt = null;
 							ResultSet rs = null;
 							Connection conn = OracleConnectionUtil.connect();
@@ -172,13 +180,15 @@ public class Main {
 							cr.resetSeat();
 							int selectNum, row, col;
 							String user = null;
+							String movie_name, date, time;
 							
 							try {
 								pstmt = conn.prepareStatement(sql);
 								rs = pstmt.executeQuery(); 
 								
-							System.out.println("::: 영화정보  :::");
-							System.out.println("영화 리스트 입니다.");
+								System.out.println("::: 영화정보  :::");
+								System.out.println("영화 리스트 입니다.");
+								
 							    while(rs.next()) {
 								System.out.println("-----------------------------------------------------------------------");
 								System.out.println("예매순위:" + rs.getString("movie_num"));
@@ -187,20 +197,31 @@ public class Main {
 								System.out.print("\t");
 								System.out.println("상영시간: " + rs.getString("RUN_TIME"));
 								System.out.println("-----------------------------------------------------------------------");
+							    }
 						    }
-						    }catch (SQLException e) {
+							catch (SQLException e) {
 						       System.out.println("SQL 실행에 오류가 발생했습니다. : " + e.getMessage());
 						    }
-					         	while(true) {
+							finally {
+								try {
+									pstmt.close();
+									rs.close();
+								}
+								catch (SQLException e) {
+									e.printStackTrace();
+								}
+							}
+							
+				         	while(true) {	// 예매 진행 및 취소중 선택
 								System.out.println("1.예매  2.취소 ");
 								int choice = sc.nextInt();
 								sc.nextLine();
-								String name;
+								
 								if(choice == 1) {			
-									while(true) {
+									while(true) {	// 희망 영화 선택
 										System.out.println("원하시는 영화를 입력해주세요");
-										name = sc.nextLine();
-										List<MovieInfoVo> list = mdao.getList(name);
+										movie_name = sc.nextLine();
+										List<MovieInfoVo> list = mdao.getList(movie_name);
 										if(list.size() == 0) {
 											System.out.println("잘못 입력하셨습니다.");
 											continue;
@@ -212,116 +233,140 @@ public class Main {
 											break;
 										}
 									}
-									StringBuffer str;
+									
+									StringBuffer str;	// 희망날짜 선택
 									while(true) {
 										System.out.println("원하시는 날짜를 입력해주세요");
-										String date = sc.nextLine();
+										date = sc.nextLine();
 										str = new StringBuffer(date);
 										str.insert(0, "2021-09-");
-										List<TicketInfoVo>list1 = idao.get_List(str.toString(), name);
-									if(list1.size() == 0) {
-										System.out.println("잘못 입력하셨습니다.");
-										continue;
-									}else {
-										for(TicketInfoVo vo1 : list1) {
-											System.out.println(vo1);
+										List<TicketInfoVo>list1 = idao.get_List(str.toString(), movie_name);
+										
+										if(list1.size() == 0) {
+											System.out.println("잘못 입력하셨습니다.");
+											continue;
 										}
-									 	break;
-									   }
+										else {
+											for(TicketInfoVo vo1 : list1) {
+												System.out.println(vo1);
+											}
+										 	break;
+										}
 									}
-									while(true) {
+	
+									while(true) {	// 희망시간 선택
 										System.out.println("원하시는 시간을 입력해주세요");
-										String time = sc.nextLine();
-						                List<TicketInfoVo>list1 = idao.get_TimeList(str.toString(), name, time);
+										time = sc.nextLine();
+						                List<TicketInfoVo>list1 = idao.get_TimeList(str.toString(), movie_name, time);
+						                
 						                if(list1.size() == 0) {
 						                System.out.println("잘못 입력하셨습니다.");
 						                      continue;
-						                }else {
-						                for(TicketInfoVo vo1 : list1) {
-						                            System.out.println(vo1);
 						                }
+						                else {
+						                	for(TicketInfoVo vo1 : list1) {
+					                            System.out.println(vo1);
+						                	}
+						                	break;
 										}
-						                System.out.println("----------------------------------------------------------");
-						                System.out.println("선택하신 영화 정보입니다.");
-						                System.out.println("영화제목 :"+ name + "\n날짜:" +str.toString()+ "  영화시간"+ time);
-						                System.out.println("----------------------------------------------------------");
-										System.out.println("예매를 진행하시겠습니까? 1:네 2:아니오");
-										int numm = sc.nextInt();
-										if(numm == 1) {
-										     do{
-											 user = sc.nextLine();
-											 System.out.println("좌석 선택창으로 넘어갑니다.");
-											 System.out.println("\n1.조회 2.예약 3.종료(기능)");
-											 System.out.print("원하시는 서비스를 선택해주세요->");
-											 selectNum = sc.nextInt();
-											 if(selectNum==1){
-												 System.out.println("좌석조회 서비스 입니다.");
-												 cr.reference();		 
-											 }else if(selectNum==2){
-												 System.out.println("인원수를 선택하세요. 최대 인원은 2명까지입니다.");
-												 	int peonum = sc.nextInt();
-												 	if(peonum==1) {
-												    	do{
-												    		System.out.print("열을 선택하세요->");
-												    		row = sc.nextInt();
-												    		System.out.print("행을 선택하세요->");
-												    		col = sc.nextInt();
-												    		if (seat[row][col].equals("___")) {
-												    			seat[row][col] = user;
-												    			System.out.println(row+"열"+col+"행 좌석이 예약되었습니다.");
-												    			flag = false;
-												    		}
-												    		else {
-												    		System.out.println("이미 예약된 좌석입니다. 다른 좌석을 선택해주세요.");
-												    		}
-												    	}while(flag);
-												    	cr.reference();
-												 	}else if(peonum ==2) {						 		
-												    	do{					    		
-												    		System.out.print("열을 선택하세요->");
-												    		row = sc.nextInt();
-												    		System.out.print("행을 선택하세요->");
-												    		col = sc.nextInt();
-												    		if(seat[row][col].equals("___")){
-												    		seat[row][col] = user;
-												    		System.out.println(row+"열"+col+"행 좌석이 예약되었습니다.");
-												    	    }			    		
-												    		System.out.print("열을 선택하세요->");
-												    		row = sc.nextInt();
-												    		System.out.print("행을 선택하세요->");
-												    		col = sc.nextInt();
-												    		if(seat[row][col].equals("___")){
-												    		seat[row][col] = user;
-												    		System.out.println(row+"열"+col+"행 좌석이 예약되었습니다.");
-												    		break;
-												    	}else{
-												    		System.out.println("이미 예약된 좌석입니다. 다른 좌석을 선택해주세요.");						    	
-												    	}
-														}while(flag);
-												    	cr.reference();	
-												 	}break;	
-										     }else if(selectNum==3){
-											 System.out.println("서비스를 종료합니다.");break;	 	
-											 }
-										else if(numm == 2) {
-											System.out.println("서비스를 종료합니다.");
-											break;
-										    }
-										 }while(exit);
-										}
-										}
-									}else if(choice==2){
+									}	// while 희망시간 선택 -end
+									
+									System.out.println("----------------------------------------------------------");
+									System.out.println("선택하신 영화 정보입니다.");
+									System.out.println("영화제목 :"+ movie_name + "\n날짜:" +str.toString()+ "  영화시간"+ time);
+									System.out.println("----------------------------------------------------------");
+									System.out.println("예매를 진행하시겠습니까? 1:네 2:아니오");
+									int numm = sc.nextInt();
+									
+									if (numm == 1) {	// 예매진행
+										while (true) {
+											user = sc.nextLine();
+											System.out.println("좌석 선택창으로 넘어갑니다.");
+											System.out.println("\n1.좌석위치 조회 2.좌석선택 3.종료(기능)");
+											System.out.print("원하시는 서비스를 선택해주세요->");
+											selectNum = sc.nextInt();
+											
+											if (selectNum == 1){	// 좌석위치 조회
+												System.out.println("좌석조회 서비스 입니다.");
+												cr.reference();		 
+											}
+											else if (selectNum == 2){
+												System.out.println("인원수를 선택하세요. 최대 인원은 2명까지입니다.");
+												int peonum = sc.nextInt();
+												
+												if (peonum == 1) {	// 인원수 1명
+													while(true) {
+														System.out.print("열을 선택하세요->");
+														row = sc.nextInt();
+														System.out.print("행을 선택하세요->");
+														col = sc.nextInt();
+														if (seat[row][col].equals("___")) {
+															seat[row][col] = user;
+															cr.reference();
+															System.out.println(row+"열"+col+"행 좌석이 예약되었습니다.");
+															break;	// 행열선택
+														}
+														else {
+															System.out.println("이미 예약된 좌석입니다. 다른 좌석을 선택해주세요.");
+														}
+													}
+													break;
+												}
+												else if(peonum == 2) {	// 인원수 2명					 		
+													while(true) {					    		
+														System.out.print("열을 선택하세요->");
+														row = sc.nextInt();
+														System.out.print("행을 선택하세요->");
+														col = sc.nextInt();
+														
+														if (seat[row][col].equals("___")) {
+															seat[row][col] = user;
+															cr.reference();
+															// payment insert 메소드
+															// seat insert 메소드
+															System.out.println(row+"열"+col+"행 좌석이 예약되었습니다.");
+														}		
+														
+														System.out.print("열을 선택하세요->");
+														row = sc.nextInt();
+														System.out.print("행을 선택하세요->");
+														col = sc.nextInt();
+														
+														if (seat[row][col].equals("___")) {
+															seat[row][col] = user;
+															// seat insert 메소드
+															cr.reference();
+															System.out.println(row+"열"+col+"행 좌석이 예약되었습니다.");
+															break;	// 행열선택
+														}
+														else {
+															System.out.println("이미 예약된 좌석입니다. 다른 좌석을 선택해주세요.");
+														}
+													}	// while -end
+												}	// peonum2 -end
+												break;	// 좌석조회, 선택
+											}	// selecNum2 -end
+											else if (selectNum == 3) {
+												System.out.println("서비스를 종료합니다.");
+												break; 	
+											}
+										}	// while -end
+										break;
+									}	// numm1 -end
+									else if (numm == 2) {	// 예매진행 취소
+										System.out.println("서비스를 종료합니다.");
+										break;
+									}
+								}	// if choice 1 -end
+								else if(choice==2){
 									System.out.println("서비스를 종료합니다.");
 									break;
-									}
-						       }
+								}
+						    }
 									
 							
 						}	// select2-1 -end
-						
-						
-						
-						
+
 						
 						else if (select2 == 2) {	// 예매내역 조회
 							List<TicketingCheckVo> list = tdao.id_Lookup(id, password);
