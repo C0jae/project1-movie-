@@ -1,7 +1,6 @@
 package dao;
 
 import java.sql.Connection;
-import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -21,7 +20,7 @@ public class TicketPriDao {
 		return dao;
 	}
 	String movie_price;
-	public List<TicketpriVo> getsList(String name, Date date, String time) {
+	public List<TicketpriVo> getsList(String movie_date, String movie_name, String movie_time) {
 		Connection conn = OracleConnectionUtil.connect();
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -30,9 +29,9 @@ public class TicketPriDao {
 		List<TicketpriVo> list = new ArrayList<TicketpriVo>();
 		try {
 			pstmt = conn.prepareStatement(sql);
-			pstmt.setString(1, name);			
-			pstmt.setDate(2, date);
-			pstmt.setString(3, time);
+			pstmt.setString(1, movie_time);			
+			pstmt.setString(2, movie_date);
+			pstmt.setString(3, movie_time);
 			rs = pstmt.executeQuery();
 			while(rs.next()) {
 				vo2 = new TicketpriVo(rs.getString(1),rs.getInt(2));

@@ -11,11 +11,14 @@ import java.util.regex.Pattern;
 import dao.CancleDao;
 import dao.LoginDao;
 import dao.MovieInfoDao;
+import dao.PaymentDao;
+import dao.SeatCheckDao;
 import dao.SignupDao;
 import dao.TicketInfoDao;
 import dao.TicketingCheckDao;
 import vo.MembersVo;
 import vo.MovieInfoVo;
+import vo.PayInfoVo;
 import vo.SeatVo;
 import vo.TicketInfoVo;
 import vo.TicketingCheckVo;
@@ -34,9 +37,9 @@ public class Main {
 	
 	// 좌석표시
 	public void reference(){
-		char row = 'A';
+		int row = 1;
 		for (int i = 1; i < 5; i++){
-			System.out.print("\n" + row + "열  ");
+			System.out.print("\n" + row + "행  ");
 			row++;
 			for(int j = 1; j < 9; j++){
 				String seat = (this.seat[i][j].equals("___"))?"◻︎":"◼︎";
@@ -65,6 +68,9 @@ public class Main {
 	    TicketInfoDao idao = TicketInfoDao.getInstance();
 	    SignupDao sdao = SignupDao.getInstance();
 		MembersVo mvo;
+		PaymentDao pdao = PaymentDao.getInstance();
+		SeatCheckDao scdao = SeatCheckDao.getInstance();
+		SeatVo svo;
 		
 		while(true) {
 			System.out.println("::: 원하시는 메뉴의 숫자를 입력해주세요. :::");
@@ -174,20 +180,18 @@ public class Main {
 							ResultSet rs = null;
 							Connection conn = OracleConnectionUtil.connect();
 							String sql = "SELECT * FROM MOVIEINFO";
-						    boolean flag = true;
-							boolean exit = true;
 							Main cr = new Main();
 							cr.resetSeat();
 							int selectNum, row, col;
 							String user = null;
-							String movie_name, date, time;
+							String movie_name, movie_date, movie_time;
 							
 							try {
 								pstmt = conn.prepareStatement(sql);
 								rs = pstmt.executeQuery(); 
 								
-								System.out.println("::: 영화정보  :::");
-								System.out.println("영화 리스트 입니다.");
+								System.out.println("\n::: 영화정보  :::");
+								System.out.println("::: 영화 리스트 입니다. :::");
 								
 							    while(rs.next()) {
 								System.out.println("-----------------------------------------------------------------------");
@@ -213,20 +217,22 @@ public class Main {
 							}
 							
 				         	while(true) {	// 예매 진행 및 취소중 선택
-								System.out.println("1.예매  2.취소 ");
+								System.out.println("::: 1.예매  2.취소 :::");
+								System.out.print("번호 입력 >>> ");
 								int choice = sc.nextInt();
 								sc.nextLine();
 								
 								if(choice == 1) {			
 									while(true) {	// 희망 영화 선택
-										System.out.println("원하시는 영화를 입력해주세요");
+										System.out.print("\n원하시는 영화를 입력해주세요. >>> ");
 										movie_name = sc.nextLine();
 										List<MovieInfoVo> list = mdao.getList(movie_name);
 										if(list.size() == 0) {
-											System.out.println("잘못 입력하셨습니다.");
+											System.out.println("\n::: 잘못 입력하셨습니다. :::");
 											continue;
 										}
 										else {
+											System.out.println("\n::: 상영일자 정보 :::");
 											for (MovieInfoVo vo : list) {
 												System.out.println(vo);
 											}
@@ -236,17 +242,19 @@ public class Main {
 									
 									StringBuffer str;	// 희망날짜 선택
 									while(true) {
-										System.out.println("원하시는 날짜를 입력해주세요");
-										date = sc.nextLine();
-										str = new StringBuffer(date);
+										System.out.println("\n::: 원하시는 날짜를 입력해주세요. :::");
+										System.out.print("희망날짜(dd 형식으로 입력해주세요.) >>> ");
+										movie_date = sc.nextLine();
+										str = new StringBuffer(movie_date);
 										str.insert(0, "2021-09-");
 										List<TicketInfoVo>list1 = idao.get_List(str.toString(), movie_name);
 										
 										if(list1.size() == 0) {
-											System.out.println("잘못 입력하셨습니다.");
+											System.out.println("\n::: 잘못 입력하셨습니다. :::");
 											continue;
 										}
 										else {
+											System.out.println("\n::: 상영시간 정보 :::");
 											for(TicketInfoVo vo1 : list1) {
 												System.out.println(vo1);
 											}
@@ -255,97 +263,121 @@ public class Main {
 									}
 	
 									while(true) {	// 희망시간 선택
-										System.out.println("원하시는 시간을 입력해주세요");
-										time = sc.nextLine();
-						                List<TicketInfoVo>list1 = idao.get_TimeList(str.toString(), movie_name, time);
+										System.out.println("\n::: 원하시는 시간을 입력해주세요. :::");
+										System.out.print("희망시간(hh:mm 형식으로 입력해주세요.) >>> ");
+										movie_time = sc.nextLine();
+						                List<TicketInfoVo>list1 = idao.get_TimeList(str.toString(), movie_name, movie_time);
 						                
 						                if(list1.size() == 0) {
-						                System.out.println("잘못 입력하셨습니다.");
+						                System.out.println("\\n::: 잘못 입력하셨습니다. :::");
 						                      continue;
 						                }
 						                else {
-						                	for(TicketInfoVo vo1 : list1) {
-					                            System.out.println(vo1);
-						                	}
 						                	break;
 										}
 									}	// while 희망시간 선택 -end
 									
+									System.out.println("\n----------------------------------------------------------");
+									System.out.println("::: 선택하신 영화 정보입니다. :::");
+									System.out.println("영화제목 :"+ movie_name + "\n날짜:" +str.toString()+ "  영화시간"+ movie_time);
 									System.out.println("----------------------------------------------------------");
-									System.out.println("선택하신 영화 정보입니다.");
-									System.out.println("영화제목 :"+ movie_name + "\n날짜:" +str.toString()+ "  영화시간"+ time);
-									System.out.println("----------------------------------------------------------");
-									System.out.println("예매를 진행하시겠습니까? 1:네 2:아니오");
+									System.out.println("\n::: 예매를 진행하시겠습니까? 1:네 2:아니오 :::");
+									System.out.print("번호입력 >>> ");
 									int numm = sc.nextInt();
 									
 									if (numm == 1) {	// 예매진행
+										String movie_theater = null;
+										String movie_seat = null;
+										System.out.println("\n::: 인원수를 선택하세요. :::");
+										System.out.print("인원수 입력(숫자) >>> ");
+										int pay_num = sc.nextInt();
+										user = sc.nextLine();
+										System.out.println("\n::: 좌석 선택창으로 넘어갑니다. :::");
+										
 										while (true) {
-											user = sc.nextLine();
-											System.out.println("좌석 선택창으로 넘어갑니다.");
-											System.out.println("\n1.좌석위치 조회 2.좌석선택 3.종료(기능)");
-											System.out.print("원하시는 서비스를 선택해주세요->");
+											System.out.println("\n::: 1.좌석위치 조회 2.좌석선택 3.종료(기능) :::");
+											System.out.println("::: 원하시는 서비스를 선택해주세요. :::");
+											System.out.print("번호입력 >>> ");
 											selectNum = sc.nextInt();
 											
 											if (selectNum == 1){	// 좌석위치 조회
-												System.out.println("좌석조회 서비스 입니다.");
-												cr.reference();		 
+												System.out.println("\n::: 좌석조회 서비스 입니다. :::");
+												scdao.seat_Check(movie_name, str.toString(), movie_time);
 											}
-											else if (selectNum == 2){
-												System.out.println("인원수를 선택하세요. 최대 인원은 2명까지입니다.");
-												int peonum = sc.nextInt();
-												
-												if (peonum == 1) {	// 인원수 1명
+											
+											
+											
+											
+											
+											
+											
+											else if (selectNum == 2){	// 좌석선택
+												for (int i = 0; i < pay_num; i++) {
 													while(true) {
-														System.out.print("열을 선택하세요->");
+														scdao.seat_Check(movie_name, str.toString(), movie_time);
+														
+														System.out.print("행을 선택하세요.(1 ~ 4) >>> ");
 														row = sc.nextInt();
-														System.out.print("행을 선택하세요->");
+														System.out.print("열을 선택하세요.(1 ~ 8) >>> ");
 														col = sc.nextInt();
 														if (seat[row][col].equals("___")) {
-															seat[row][col] = user;
-															cr.reference();
-															System.out.println(row+"열"+col+"행 좌석이 예약되었습니다.");
-															break;	// 행열선택
+															seat[row][col] = "◼︎";
+															scdao.seat_Check(movie_name, str.toString(), movie_time);
+															
+															movie_seat = row + " - " + col;
+															
+															List<PayInfoVo> p_list = pdao.payinfo
+																	(movie_name, str.toString(), movie_time, id, 
+																			pay_num, movie_theater, movie_seat);
+															
+															System.out.println(row+" - "+col+"번 좌석이 예약되었습니다.\n");
+															break;
 														}
 														else {
-															System.out.println("이미 예약된 좌석입니다. 다른 좌석을 선택해주세요.");
-														}
-													}
-													break;
-												}
-												else if(peonum == 2) {	// 인원수 2명					 		
-													while(true) {					    		
-														System.out.print("열을 선택하세요->");
-														row = sc.nextInt();
-														System.out.print("행을 선택하세요->");
-														col = sc.nextInt();
-														
-														if (seat[row][col].equals("___")) {
-															seat[row][col] = user;
-															cr.reference();
-															// payment insert 메소드
-															// seat insert 메소드
-															System.out.println(row+"열"+col+"행 좌석이 예약되었습니다.");
-														}		
-														
-														System.out.print("열을 선택하세요->");
-														row = sc.nextInt();
-														System.out.print("행을 선택하세요->");
-														col = sc.nextInt();
-														
-														if (seat[row][col].equals("___")) {
-															seat[row][col] = user;
-															// seat insert 메소드
-															cr.reference();
-															System.out.println(row+"열"+col+"행 좌석이 예약되었습니다.");
-															break;	// 행열선택
-														}
-														else {
-															System.out.println("이미 예약된 좌석입니다. 다른 좌석을 선택해주세요.");
+															System.out.println("\n::: 이미 예약된 좌석입니다. 다른 좌석을 선택해주세요. :::");
 														}
 													}	// while -end
-												}	// peonum2 -end
-												break;	// 좌석조회, 선택
+												}
+												break;
 											}	// selecNum2 -end
+											
+											
+											
+											
+											
+											
+											
+											
+											
+											
+											
+//											else if (selectNum == 2){	// 좌석선택
+//												for (int i = 0; i < pay_num; i++) {
+//													while(true) {
+//														System.out.print("행을 선택하세요.(1 ~ 4) >>> ");
+//														row = sc.nextInt();
+//														System.out.print("열을 선택하세요.(1 ~ 8) >>> ");
+//														col = sc.nextInt();
+//														if (seat[row][col].equals("___")) {
+//															seat[row][col] = user;
+//															cr.reference();
+//															
+//															movie_seat = row + " - " + col;
+//															
+//															List<PayInfoVo> p_list = pdao.payinfo
+//																	(movie_name, str.toString(), movie_time, id, 
+//																			pay_num, movie_theater, movie_seat);
+//															
+//															System.out.println(row+" - "+col+"번 좌석이 예약되었습니다.\n");
+//															break;
+//														}
+//														else {
+//															System.out.println("\n::: 이미 예약된 좌석입니다. 다른 좌석을 선택해주세요. :::");
+//														}
+//													}	// while -end
+//												}
+//												break;
+//											}	// selecNum2 -end
 											else if (selectNum == 3) {
 												System.out.println("서비스를 종료합니다.");
 												break; 	
@@ -357,6 +389,7 @@ public class Main {
 										System.out.println("서비스를 종료합니다.");
 										break;
 									}
+									
 								}	// if choice 1 -end
 								else if(choice==2){
 									System.out.println("서비스를 종료합니다.");

@@ -19,7 +19,7 @@ public class TicketInfoDao {
 	public static TicketInfoDao getInstance() {
 		return dao;
 	}
-	public List<TicketInfoVo> get_List(String date, String name) {
+	public List<TicketInfoVo> get_List(String movie_date, String movie_name) {
 		Connection conn = OracleConnectionUtil.connect();
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -28,8 +28,8 @@ public class TicketInfoDao {
 		List<TicketInfoVo> list1 = new ArrayList<TicketInfoVo>();
 		try {
 			pstmt = conn.prepareStatement(sql);
-			pstmt.setString(1, date);
-			pstmt.setString(2, name);
+			pstmt.setString(1, movie_date);
+			pstmt.setString(2, movie_name);
 			rs = pstmt.executeQuery();
 			while(rs.next()) {
 				vo1 = new TicketInfoVo(rs.getString(1));
@@ -44,7 +44,8 @@ public class TicketInfoDao {
         }
         return null;
 	}
-	public List<TicketInfoVo> get_TimeList(String date, String name, String time) {
+	
+	public List<TicketInfoVo> get_TimeList(String movie_date, String movie_name, String movie_time) {
 		Connection conn = OracleConnectionUtil.connect();
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -53,9 +54,9 @@ public class TicketInfoDao {
 		List<TicketInfoVo> list1 = new ArrayList<TicketInfoVo>();
 		try {
 			pstmt = conn.prepareStatement(sql);
-			pstmt.setString(1, date);
-			pstmt.setString(2, name);
-			pstmt.setString(3, time);
+			pstmt.setString(1, movie_date);
+			pstmt.setString(2, movie_name);
+			pstmt.setString(3, movie_time);
 			rs = pstmt.executeQuery();
 			while(rs.next()) {
 				vo1 = new TicketInfoVo(rs.getString(1));

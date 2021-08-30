@@ -44,7 +44,7 @@ public class MovieInfoDao {
 			}
 			
 	    }
-		public List<MovieInfoVo> getList(String name){
+		public List<MovieInfoVo> getList(String movie_name){
 			Connection conn = OracleConnectionUtil.connect();
 			PreparedStatement pstmt = null;
 			ResultSet rs = null;
@@ -53,7 +53,7 @@ public class MovieInfoDao {
 			MovieInfoVo vo;
 			try {
 				pstmt = conn.prepareStatement(sql);
-				pstmt.setString(1, name);
+				pstmt.setString(1, movie_name);
 				rs = pstmt.executeQuery();
 				while(rs.next()) {
 					vo = new MovieInfoVo(rs.getDate(1));

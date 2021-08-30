@@ -20,6 +20,7 @@ password varchar2(30) NOT NULL,			-- 비밀번호
 email varchar2(40),						-- 이메일
 tel varchar2(20)						-- 전화번호
 );
+
 CREATE SEQUENCE mem_code;
 
 -- 결제정보
@@ -27,11 +28,13 @@ CREATE TABLE PAYMENT (
 pay_code varchar2(20) PRIMARY KEY,		-- 결제코드	pk
 mem_code varchar2(10) NOT NULL,			-- 회원코드	회원정보 fk
 movie_code varchar2(30) NOT NULL,		-- 영화코드	상영계획 fk
-pay_time DATE NOT NULL,					-- 결제시간
+pay_time DATE DEFAULT sysdate,			-- 결제시간
 pay_num number(3) NOT NULL,				-- 결제인원수
 movie_price number(6) NOT NULL,			-- 영화 금액
 pay_price number(10) NOT NULL			-- 총결제금액(movie_price * pay_num)
 );
+
+CREATE SEQUENCE pay_code;
 
 -- 좌석정보
 CREATE TABLE SEAT (
@@ -40,6 +43,14 @@ movie_theater varchar2(20)NOT NULL, 	-- 영화 상영관
 movie_code varchar2(30) NOT NULL,		-- 영화코드	상영계획 fk
 movie_seat varchar2(20) NOT NULL		-- 영화 좌석
 );
+
+SELECT * FROM MEMBERS;
+SELECT * FROM PAYMENT;
+SELECT * FROM TICKETINFO;
+SELECT * FROM seat;
+Drop TABLE seat;
+
+SELECT * FROM seat WHERE movie_code = (SELECT movie_code FROM ticketinfo WHERE movie_name = '싱크홀' AND movie_date = '2021-09-11' AND movie_time = '10:20');
 
 -- 영화정보
 CREATE TABLE MOVIEINFO (
@@ -66,7 +77,10 @@ SELECT * FROM PAYMENT p ;
 
 -- 테이블 생성 -end-------------------------------------------------------------------------------------------------------
 
-
+DROP TABLE PAYMENT ;
+SELECT * FROM PAYMENT p ;
+SELECT * FROM TICKETINFO t ;
+INSERT INTO PAYMENT (pay_code, mem_code, movie_code, pay_num, movie_price, pay_price) VALUES (pay_code.nextval, mem_code.nextval, 'm0603511020', 2, 12000, 24000);
 
 -- movieinfo 테이블 정보 insert------------------------------------------------------------------------------------------
 INSERT INTO MOVIEINFO(movie_num ,movie_name,run_time,movie_genre,
@@ -201,27 +215,11 @@ SELECT * FROM MOVIEINFO;
 SELECT * FROM SEAT s ;
 SELECT * FROM MEMBERS m ;
 
-DROP TABLE PAYMENT ;
+INSERT INTO payment (pay_code, mem_code, movie_code, pay_time, pay_num, movie_price, pay_price)
+	VALUES (pay_code.nextval, ?, ?, sysdate, ?, ?, ?);
 
-SELECT movie_date FROM TICKETINFO WHERE movie_name = '싱크홀' GROUP BY movie_date ORDER BY movie_date;
-/*
-4. 예매취소시 한사람이 여러개의 영화를 예매한 상황이라면 그중 선택해서 예매를 취소해야한다. -> 구현방법 찾기
- 	ㄴ 해당 사람이 예매한 영화목록 불러오기(결제코드, 영화제목, 날짜, 시간, 결제시간)
- 	ㄴ 취소할 영화를 입력받으면 해당되는 행을 찾아 삭제 -> 입력받을 방법 찾기
- */
-DELETE FROM payment WHERE pay_code = '';
-
--- 5. 값이 두개가 나왔고 이 값을 or 로 진행시키고 싶으면 어떻게 해야할까?
-SELECT movie_code FROM payment
-	WHERE mem_code = (SELECT mem_code FROM members WHERE name = '윈터' AND id = 'winter');
-	
-SELECT p.pay_code, t.movie_name, t.movie_date, t.movie_time, p.pay_time, t.movie_code FROM PAYMENT p, TICKETINFO t WHERE t.movie_code = '651011020' OR t.movie_code = '695020900';
-
-
-
-
-
-
-
+SELECT m.mem_code, t.movie_code, movie_price FROM MEMBERS m ,TICKETINFO t
+	WHERE t.movie_name = '싱크홀' AND t.movie_date = '2021-09-06' AND movie_time = '10:20'
+	AND m.mem_code = (SELECT mem_code FROM members WHERE id = 'cdw0807');
 
 
