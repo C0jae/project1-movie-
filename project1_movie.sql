@@ -10,7 +10,11 @@
 
 
 -- 테이블 생성 ------------------------------------------------------------------------------------------------------
-
+DROP TABLE members;
+DROP TABLE seat;
+DROP TABLE movieinfo;
+DROP TABLE payment;
+DROP TABLE TICKETINFO ;
 -- 회원정보
 CREATE TABLE MEMBERS (
 mem_code varchar2(10) PRIMARY KEY,		-- 회원코드	pk
@@ -23,39 +27,10 @@ tel varchar2(20)						-- 전화번호
 
 CREATE SEQUENCE mem_code;
 
--- 결제정보
-CREATE TABLE PAYMENT (
-pay_code varchar2(20) PRIMARY KEY,		-- 결제코드	pk
-mem_code varchar2(10) NOT NULL,			-- 회원코드	회원정보 fk
-movie_code varchar2(30) NOT NULL,		-- 영화코드	상영계획 fk
-pay_time DATE DEFAULT sysdate,			-- 결제시간
-pay_num number(3) NOT NULL,				-- 결제인원수
-movie_price number(6) NOT NULL,			-- 영화 금액
-pay_price number(10) NOT NULL			-- 총결제금액(movie_price * pay_num)
-);
-
-CREATE SEQUENCE pay_code;
-
--- 좌석정보
-CREATE TABLE SEAT (
-mem_code varchar2(10),					-- 회원코드	회원정보 fk
-movie_theater varchar2(20)NOT NULL, 	-- 영화 상영관
-movie_code varchar2(30) NOT NULL,		-- 영화코드	상영계획 fk
-movie_seat varchar2(20) NOT NULL		-- 영화 좌석
-);
-
-SELECT * FROM MEMBERS;
-SELECT * FROM PAYMENT;
-SELECT * FROM TICKETINFO;
-SELECT * FROM seat;
-Drop TABLE seat;
-
-SELECT * FROM seat WHERE movie_code = (SELECT movie_code FROM ticketinfo WHERE movie_name = '싱크홀' AND movie_date = '2021-09-11' AND movie_time = '10:20');
-
 -- 영화정보
 CREATE TABLE MOVIEINFO (
-movie_num varchar2(10) PRIMARY KEY,		-- 영화번호	pk
-movie_name varchar2(20) NOT NULL,		-- 영화제목	pk
+movie_num varchar2(10) NOT null,		-- 영화번호	
+movie_name varchar2(20) PRIMARY KEY,	-- 영화제목	pk
 run_time varchar2(10) NOT NULL,			-- 영화 상영시간
 movie_genre varchar2(20) NOT NULL,		-- 영화 장르 
 playdate DATE NOT NULL,					-- 영화개봉일
@@ -73,7 +48,34 @@ movie_theater varchar2(20) NOT NULL,	-- 영화 상영관
 movie_price number(6) NOT NULL			-- 영화가격
 );
 
-SELECT * FROM PAYMENT p ;
+ALTER TABLE ticketinfo ADD PRIMARY KEY (movie_code);
+ALTER TABLE ticketinfo ADD FOREIGN KEY (movie_name)
+	REFERENCES movieinfo (movie_name);
+
+-- 결제정보
+CREATE TABLE PAYMENT (
+pay_code varchar2(20) PRIMARY KEY,		-- 결제코드	pk
+mem_code varchar2(10) NOT NULL,			-- 회원코드	회원정보 fk
+movie_code varchar2(30) NOT NULL,		-- 영화코드	상영계획 fk
+pay_time DATE DEFAULT sysdate,			-- 결제시간
+pay_num number(3) NOT NULL,				-- 결제인원수
+movie_price number(6) NOT NULL,			-- 영화 금액
+pay_price number(10) NOT NULL,			-- 총결제금액(movie_price * pay_num)
+FOREIGN KEY (mem_code) REFERENCES members (mem_code),
+FOREIGN KEY (movie_code) REFERENCES ticketinfo (movie_code)
+);
+
+CREATE SEQUENCE pay_code;
+
+-- 좌석정보
+CREATE TABLE SEAT (
+mem_code varchar2(10),					-- 회원코드	회원정보 fk
+movie_theater varchar2(20)NOT NULL, 	-- 영화 상영관
+movie_code varchar2(30) NOT NULL,		-- 영화코드	상영계획 fk
+movie_seat varchar2(20) NOT NULL,		-- 영화 좌석
+FOREIGN KEY (mem_code) REFERENCES members (mem_code),
+FOREIGN KEY (movie_code) REFERENCES ticketinfo (movie_code)
+);
 
 -- 테이블 생성 -end-------------------------------------------------------------------------------------------------------
 
@@ -150,13 +152,6 @@ SELECT movie_code, movie_theater, movie_seat FROM seat WHERE mem_code = (SELECT 
 
 SELECT movie_time FROM TICKETINFO WHERE movie_date = '2021-09-06' AND MOVIE_NAME = '싱크홀' AND MOVIE_TIME = '10:20';
 
-
-SELECT * FROM MEMBERS m ;
-SELECT * FROM PAYMENT;
-SELECT * FROM TICKETINFO;
-SELECT * FROM SEAT;
-SELECT * FROM MOVIEINFO;
-SELECT movie_code FROM payment WHERE mem_code = (SELECT mem_code FROM members WHERE tel = '01012345678');
 	
 -- 예매취소 ----------------------------
 DELETE FROM payment WHERE mem_code = (SELECT mem_code FROM members WHERE id = '' AND password = '')
@@ -170,56 +165,24 @@ CONSTRAINT pcode_fk FOREIGN KEY (pcode)
 	-- 부모테이블 참조값이 삭제될때, 참조하는 자식테이블 row가 삭제
 
 
--- 시험용 데이터 insert -> 나중에 삭제후 진행 예정----------------------------------------------------------
-INSERT INTO MEMBERS (mem_code, name, id, password, email, TEL)
-	VALUES ('1', '윈터', 'winter', 'espa', 'winter@naver.com', '01012345678');	
+DELETE FROM payment WHERE mem_code =
+	(SELECT mem_code FROM members WHERE id = ? AND password = ?)
+	AND movie_code = ?
 	
-INSERT INTO MEMBERS (mem_code, name, id, password, email, TEL)
-	VALUES ('2', '모모', 'momo', 'twice', 'momo@naver.com', '01023456789');
+DELETE FROM payment WHERE mem_code = (SELECT mem_code FROM members WHERE id = 'cdw0807' AND password = 'lksy0520')
+	AND movie_code = 'm0603511020';
+
+DELETE FROM seat WHERE mem_code = (SELECT mem_code FROM members WHERE id = 'cdw0807' AND password = 'lksy0520') AND movie_code = 'm0603511020';
 	
-INSERT INTO SEAT (mem_code ,movie_theater, movie_code, MOVIE_SEAT)
-	VALUES ('1' ,'5층 1관', 'm0603511020', 'A4');
 
-INSERT INTO SEAT (mem_code ,movie_theater, movie_code, MOVIE_SEAT)
-	VALUES ('1' ,'5층 1관', 'm0603511020', 'A3');
-
-INSERT INTO SEAT (mem_code ,movie_theater, movie_code, MOVIE_SEAT)
-	VALUES ('1' ,'9층 5관', 'm0602950900', 'C1');
-
-INSERT INTO SEAT (mem_code ,movie_theater, movie_code, MOVIE_SEAT)
-	VALUES ('2' ,'5층 1관', 'm0603511020', 'B1');
-
-INSERT INTO SEAT (mem_code ,movie_theater, movie_code, MOVIE_SEAT)
-	VALUES ('2' ,'5층 1관', 'm0603511020', 'B2');
-
-INSERT INTO SEAT (mem_code ,movie_theater, movie_code, MOVIE_SEAT)
-	VALUES ('2' ,'5층 1관', 'm0603511020', 'B3');
-
-INSERT INTO members (mem_code, name, id, password, email, tel) 
-	VALUES ('1', '윈터', 'winter', 'espa', 'winter@naver.com', '01012345678');
-
-INSERT INTO payment (pay_code, mem_code, MOVIE_CODE, PAY_TIME, pay_num, movie_price, pay_price)
-	VALUES ('123', '1', 'm0603511020', '2021-09-05', '2', '12000', '24000');
-
-INSERT INTO payment (pay_code, mem_code, MOVIE_CODE, PAY_TIME, pay_num, movie_price, pay_price)
-	VALUES ('124', '1', 'm0602950900', '2021-09-05', '1', '11000', '33000');
-
-INSERT INTO payment (pay_code, mem_code, MOVIE_CODE, PAY_TIME, pay_num, movie_price, pay_price)
-	VALUES ('456', '2', 'm0603511020', '2021-09-05', '3', '12000', '36000');
-
-
--- 연습장--------------------------------------------------------------------------------------------
-SELECT * FROM TICKETINFO;
-SELECT * FROM PAYMENT;
-SELECT * FROM MOVIEINFO;
-SELECT * FROM SEAT s ;
-SELECT * FROM MEMBERS m ;
-
-INSERT INTO payment (pay_code, mem_code, movie_code, pay_time, pay_num, movie_price, pay_price)
-	VALUES (pay_code.nextval, ?, ?, sysdate, ?, ?, ?);
-
-SELECT m.mem_code, t.movie_code, movie_price FROM MEMBERS m ,TICKETINFO t
-	WHERE t.movie_name = '싱크홀' AND t.movie_date = '2021-09-06' AND movie_time = '10:20'
-	AND m.mem_code = (SELECT mem_code FROM members WHERE id = 'cdw0807');
-
-
+SELECT * FROM TICKETINFO WHERE movie_code IN (SELECT movie_code FROM PAYMENT WHERE mem_code = (SELECT MEM_CODE FROM MEMBERS WHERE tel = ?))
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	

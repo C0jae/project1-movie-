@@ -302,82 +302,51 @@ public class Main {
 											
 											if (selectNum == 1){	// 좌석위치 조회
 												System.out.println("\n::: 좌석조회 서비스 입니다. :::");
-												scdao.seat_Check(movie_name, str.toString(), movie_time);
+												scdao.seat_Display(movie_name, str.toString(), movie_time);
+												System.out.println("");
 											}
 											
-											
-											
-											
-											
-											
-											
 											else if (selectNum == 2){	// 좌석선택
+												scdao.seat_Display(movie_name, str.toString(), movie_time);
 												for (int i = 0; i < pay_num; i++) {
 													while(true) {
-														scdao.seat_Check(movie_name, str.toString(), movie_time);
-														
-														System.out.print("행을 선택하세요.(1 ~ 4) >>> ");
+														System.out.print("\n행을 선택하세요.(1 ~ 4) >>> ");
 														row = sc.nextInt();
 														System.out.print("열을 선택하세요.(1 ~ 8) >>> ");
 														col = sc.nextInt();
-														if (seat[row][col].equals("___")) {
-															seat[row][col] = "◼︎";
-															scdao.seat_Check(movie_name, str.toString(), movie_time);
-															
-															movie_seat = row + " - " + col;
-															
-															List<PayInfoVo> p_list = pdao.payinfo
-																	(movie_name, str.toString(), movie_time, id, 
-																			pay_num, movie_theater, movie_seat);
-															
-															System.out.println(row+" - "+col+"번 좌석이 예약되었습니다.\n");
+														
+														movie_seat = row + " - " + col;
+														
+														if (scdao.seat_Check(movie_name, str.toString(), movie_time, movie_seat)) {
+															if (seat[row][col].equals("___")) {
+																seat[row][col] = "◼︎";
+																
+																List<PayInfoVo> p_list = pdao.payinfo
+																		(movie_name, str.toString(), movie_time, id, 
+																				pay_num, movie_theater, movie_seat);
+																
+																scdao.seat_Display(movie_name, str.toString(), movie_time);
+																System.out.println("\n"+row+" - "+col+"번 좌석이 예약되었습니다.\n");
+															}
+															else {
+																System.out.println("\n::: 이미 예약된 좌석입니다. 다른 좌석을 선택해주세요. :::\n");
+																scdao.seat_Display(movie_name, str.toString(), movie_time);
+															}
 															break;
 														}
 														else {
-															System.out.println("\n::: 이미 예약된 좌석입니다. 다른 좌석을 선택해주세요. :::");
+															System.out.println("::: 이미 예약된 좌석입니다. 다른 좌석을 선택해주세요. :::");
+															continue;
 														}
 													}	// while -end
+													
 												}
+												pdao.payment_Insert(movie_name, str.toString(), movie_time, id, pay_num, 
+														movie_theater, movie_seat);
+												System.out.println("\n::: 예매가 완료되었습니다. :::");
 												break;
 											}	// selecNum2 -end
 											
-											
-											
-											
-											
-											
-											
-											
-											
-											
-											
-//											else if (selectNum == 2){	// 좌석선택
-//												for (int i = 0; i < pay_num; i++) {
-//													while(true) {
-//														System.out.print("행을 선택하세요.(1 ~ 4) >>> ");
-//														row = sc.nextInt();
-//														System.out.print("열을 선택하세요.(1 ~ 8) >>> ");
-//														col = sc.nextInt();
-//														if (seat[row][col].equals("___")) {
-//															seat[row][col] = user;
-//															cr.reference();
-//															
-//															movie_seat = row + " - " + col;
-//															
-//															List<PayInfoVo> p_list = pdao.payinfo
-//																	(movie_name, str.toString(), movie_time, id, 
-//																			pay_num, movie_theater, movie_seat);
-//															
-//															System.out.println(row+" - "+col+"번 좌석이 예약되었습니다.\n");
-//															break;
-//														}
-//														else {
-//															System.out.println("\n::: 이미 예약된 좌석입니다. 다른 좌석을 선택해주세요. :::");
-//														}
-//													}	// while -end
-//												}
-//												break;
-//											}	// selecNum2 -end
 											else if (selectNum == 3) {
 												System.out.println("서비스를 종료합니다.");
 												break; 	
@@ -486,6 +455,7 @@ public class Main {
 										else {	// 예매번호 일치 및 예매취소
 											mvo.setMovie_code(movie_code);
 											cdao.Cancle(mvo);
+											cdao.seat_Cancle(mvo);
 											System.out.println("\n::: 예매취소가 완료되었습니다. :::");
 										}
 										
@@ -738,6 +708,7 @@ public class Main {
 							else {	// 예매번호 일치 및 예매취소
 								mvo.setMovie_code(movie_code);
 								cdao.Cancle(mvo);
+								cdao.seat_Cancle(mvo);
 								System.out.println("\n::: 예매취소가 완료되었습니다. :::");
 							}
 							

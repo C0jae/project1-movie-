@@ -20,7 +20,7 @@ public class PaymentDao {
 		return dao;
 	}
 	
-	// payment 및 seat insert
+	// seat insert
 	public List<PayInfoVo> payinfo(String movie_name, String movie_date, String movie_time, 
 			String id, int pay_num, String movie_theater, String movie_seat){
 		String sql = "SELECT m.mem_code, t.movie_code, movie_price FROM MEMBERS m ,TICKETINFO t "
@@ -29,7 +29,7 @@ public class PaymentDao {
 		
 		Connection conn = OracleConnectionUtil.connect();
 		PreparedStatement pstmt1 = null;
-		PreparedStatement pstmt2 = null;
+//		PreparedStatement pstmt2 = null;
 		PreparedStatement pstmt3 = null;
 		PreparedStatement pstmt4 = null;
 		ResultSet rs1 = null;
@@ -40,7 +40,7 @@ public class PaymentDao {
 		
 		String mem_code;
 		String movie_code;
-		int movie_price;
+//		int movie_price;
 		
 		try {
 			pstmt1 = conn.prepareStatement(sql);
@@ -58,23 +58,23 @@ public class PaymentDao {
 			
 			mem_code = rs1.getString(1);
 			movie_code = rs1.getString(2);
-			movie_price = rs1.getInt(3);
+//			movie_price = rs1.getInt(3);
 
 			
 			
-			// payment 테이블 insert
-			sql = "INSERT INTO PAYMENT(pay_code, mem_code, movie_code, pay_num, "
-					+ "movie_price, pay_price) "
-					+ "VALUES(pay_code.nextval, ?, ?, ?, ?, ?)";
-			
-			pstmt2 = conn.prepareStatement(sql);
-			pstmt2.setString(1, mem_code);
-			pstmt2.setString(2, movie_code);
-			pstmt2.setInt(3, pay_num);
-			pstmt2.setInt(4, movie_price);
-			pstmt2.setInt(5, pay_num * movie_price);
-			
-			pstmt2.execute();
+//			// payment 테이블 insert
+//			sql = "INSERT INTO PAYMENT(pay_code, mem_code, movie_code, pay_num, "
+//					+ "movie_price, pay_price) "
+//					+ "VALUES(pay_code.nextval, ?, ?, ?, ?, ?)";
+//			
+//			pstmt2 = conn.prepareStatement(sql);
+//			pstmt2.setString(1, mem_code);
+//			pstmt2.setString(2, movie_code);
+//			pstmt2.setInt(3, pay_num);
+//			pstmt2.setInt(4, movie_price);
+//			pstmt2.setInt(5, pay_num * movie_price);
+//			
+//			pstmt2.execute();
 			
 			
 			
@@ -117,7 +117,6 @@ public class PaymentDao {
 		finally {
 			try {
 				pstmt1.close();
-				pstmt2.close();
 				pstmt3.close();
 				pstmt4.close();
 				rs1.close();
@@ -130,6 +129,83 @@ public class PaymentDao {
 		}
 		return null;
 	}
+	
+	
+	
+	
+	// payment insert
+	public void payment_Insert(String movie_name, String movie_date, String movie_time, 
+			String id, int pay_num, String movie_theater, String movie_seat){
+		String sql = "SELECT m.mem_code, t.movie_code, movie_price FROM MEMBERS m ,TICKETINFO t "
+				+ "WHERE t.movie_name = ? AND t.movie_date = ? AND movie_time = ? "
+				+ "AND m.mem_code = (SELECT mem_code FROM members WHERE id = ?)";
+		
+		Connection conn = OracleConnectionUtil.connect();
+		PreparedStatement pstmt1 = null;
+		PreparedStatement pstmt2 = null;
+		ResultSet rs1 = null;
+		PayInfoVo vo;
+		List<PayInfoVo> list = new ArrayList<PayInfoVo>();
+		
+		String mem_code;
+		String movie_code;
+		int movie_price;
+		
+		try {
+			pstmt1 = conn.prepareStatement(sql);
+			
+			pstmt1.setString(1, movie_name);
+			pstmt1.setString(2, movie_date);
+			pstmt1.setString(3, movie_time);
+			pstmt1.setString(4, id);
+			
+			rs1 = pstmt1.executeQuery();
+			
+			rs1.next();
+			vo = new PayInfoVo(rs1.getString(1), rs1.getString(2), rs1.getInt(3));
+			list.add(vo);
+			
+			mem_code = rs1.getString(1);
+			movie_code = rs1.getString(2);
+			movie_price = rs1.getInt(3);
+
+			
+			// payment 테이블 insert
+			sql = "INSERT INTO PAYMENT(pay_code, mem_code, movie_code, pay_num, "
+					+ "movie_price, pay_price) "
+					+ "VALUES(pay_code.nextval, ?, ?, ?, ?, ?)";
+			
+			pstmt2 = conn.prepareStatement(sql);
+			pstmt2.setString(1, mem_code);
+			pstmt2.setString(2, movie_code);
+			pstmt2.setInt(3, pay_num);
+			pstmt2.setInt(4, movie_price);
+			pstmt2.setInt(5, pay_num * movie_price);
+			
+			pstmt2.execute();
+			
+			
+		}
+		catch (SQLException e) {
+			e.printStackTrace();
+		}
+		finally {
+			try {
+				pstmt1.close();
+				pstmt2.close();
+				rs1.close();
+			}
+			catch (SQLException e) {
+				e.printStackTrace();
+			}
+			OracleConnectionUtil.close(conn);
+		}
+	}
+	
+	
+	
+	
+	
 	
 	
 	

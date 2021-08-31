@@ -47,5 +47,35 @@ public class CancleDao {
 		}	// finally -end
 		
 	}	// name_Cancle -end
+	public void seat_Cancle(MembersVo mvo) {
+		String sql = "DELETE FROM seat WHERE mem_code = "
+				+ "(SELECT mem_code FROM members WHERE id = ? AND password = ?) "
+				+ "AND movie_code = ?";
+		
+		Connection conn = OracleConnectionUtil.connect();
+		PreparedStatement pstmt = null;
+		
+		try {
+			pstmt = conn.prepareStatement(sql); 
+			pstmt.setString(1, mvo.getId());
+			pstmt.setString(2, mvo.getPassword());
+			pstmt.setString(3, mvo.getMovie_code());
+			
+			pstmt.execute();
+		}
+		catch (SQLException e) {
+			e.printStackTrace();
+		}
+		finally {
+			try {
+				pstmt.close();
+			}
+			catch (SQLException e) {
+				e.printStackTrace();
+			}
+			OracleConnectionUtil.close(conn);
+		}	// finally -end
+		
+	}	// name_Cancle -end
 	
 }	// class -end

@@ -73,7 +73,6 @@ public class TicketingCheckDao {
 		List<TicketingCheckVo> list = new ArrayList<TicketingCheckVo>();
 		TicketingCheckVo tvo;
 		
-		
 		try {
 			pstmt = conn.prepareStatement(sql);
 			pstmt.setString(1, name);
